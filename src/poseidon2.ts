@@ -1,10 +1,10 @@
 import { babyjubjub } from '@noble/curves/misc.js';
 
-// BabyJubJub base field = BN254 / BN256 scalar field Fr.
+// The BabyJubJub prime field. All Poseidon2 inputs and outputs live in this field.
 const Fp = babyjubjub.Point.Fp;
 
 // Only t=3 (2 hash inputs + 1 padding slot) is defined by the HorizenLabs
-// BN256 reference implementation. R_F=8 (4+4), R_P=56.
+// reference implementation for this field. R_F=8 (4+4), R_P=56.
 const T = 3;
 const ROUNDS_F = 8; // full (external) rounds, split evenly 4+4
 const ROUNDS_P = 56; // partial (internal) rounds
@@ -87,7 +87,7 @@ const RC: bigint[][] = [
   [0x01fd6af15956294f9dfe38c0d976a088b21c21e4a1c2e823f912f44961f9a9cen,0x18e5abedd626ec307bca190b8b2cab1aaee2e62ed229ba5a5ad8518d4e5f2a57n,0x0fc1bbceba0590f5abbdffa6d3b35e3297c021a3a409926d0e2d54dc1c84fda6n],
 ];
 
-// x^5 in Fp — the Poseidon2 S-box for BN254.
+// x^5 in Fp — the BabyJubJub Poseidon2 S-box.
 function pow5(x: bigint): bigint {
   const x2 = Fp.sqr(x);
   return Fp.mul(Fp.sqr(x2), x);
@@ -111,7 +111,7 @@ function matmulInternal(s: bigint[]): bigint[] {
   ];
 }
 
-// Full Poseidon2 permutation for t=3 over BN254 Fr.
+// Full Poseidon2 permutation for t=3 over the BabyJubJub field.
 // Follows HorizenLabs poseidon2.rs exactly:
 //   initial M_E → R_F/2 external → R_P internal → R_F/2 external
 function permute(state: bigint[]): bigint[] {
@@ -145,8 +145,8 @@ function permute(state: bigint[]): bigint[] {
 }
 
 /**
- * Raw Poseidon2 permutation for t=3 over the BabyJubJub / BN254 scalar field.
- * Compatible with the HorizenLabs BN256 reference implementation.
+ * Raw Poseidon2 permutation for t=3 over the BabyJubJub field.
+ * Compatible with the HorizenLabs reference implementation (poseidon2_instance_bn256.rs).
  *
  * @param state - Exactly 3 field elements (bigints in [0, Fp.ORDER)).
  * @returns Permuted state of 3 field elements.
@@ -162,7 +162,7 @@ export function poseidon2Permute(state: bigint[]): bigint[] {
 }
 
 /**
- * Poseidon2 hash over the BabyJubJub / BN254 scalar field.
+ * Poseidon2 hash over the BabyJubJub field.
  * Accepts 1 or 2 field elements; the unused state slot is zero-padded.
  * State layout: [input_0, input_1_or_0, 0].
  *
@@ -180,5 +180,5 @@ export function poseidon2(inputs: bigint[]): bigint {
   return permute(state)[0]!;
 }
 
-/** The BabyJubJub / BN254 scalar field used by Poseidon2. */
+/** The BabyJubJub prime field. */
 export { Fp };

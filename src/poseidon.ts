@@ -5,7 +5,7 @@ import {
 } from '@noble/curves/abstract/poseidon.js';
 import type { PoseidonFn } from '@noble/curves/abstract/poseidon.js';
 
-// BabyJubJub base field = BN254 scalar field Fr.
+// The BabyJubJub prime field. All Poseidon inputs and outputs live in this field.
 const Fp = babyjubjub.Point.Fp;
 
 // Partial round counts per permutation width t=2..17 (index = t-2).
@@ -62,7 +62,7 @@ function getPermutation(t: number): PoseidonFn {
 }
 
 /**
- * Poseidon hash over the BabyJubJub / BN254 scalar field.
+ * Poseidon hash over the BabyJubJub field.
  * Compatible with circomlibjs / iden3 Poseidon.
  *
  * @param inputs - 1 to 16 field elements (bigints in [0, Fp.ORDER)).
@@ -85,5 +85,5 @@ export function poseidon(inputs: bigint[]): bigint {
   return getPermutation(inputs.length + 1)([0n, ...inputs])[0]!;
 }
 
-/** The BabyJubJub / BN254 scalar field used by Poseidon. */
+/** The BabyJubJub prime field. */
 export { Fp };
